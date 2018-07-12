@@ -13,10 +13,15 @@ app.post('/todos', (req, res) => {
     const todo = new Todo({
         text: req.body.text
     })
-    
     todo.save().then((addedTodo) => {
         res.status(201).send(addedTodo)
         console.log(`Added todo: ${addedTodo}`)
+    }).catch((err) => res.status(400).send(err))
+})
+
+app.get('/todos', (req, res) => {
+    Todo.find().then((todos) => {
+        res.send({todos})
     }).catch((err) => res.status(400).send(err))
 })
 
