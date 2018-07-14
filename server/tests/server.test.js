@@ -20,9 +20,9 @@ beforeEach((done) => {
 })
 
 describe('POST /todos', () => {
+
   it('should create a new todo', (done) => {
     const text = 'Test todo text'
-
     request(app)
       .post('/todos')
       .send({text})
@@ -34,7 +34,6 @@ describe('POST /todos', () => {
         if (err) {
           return done(err)
         }
-
         Todo.find({text}).then((todos) => {
           expect(todos.length).toBe(1)
           expect(todos[0].text).toBe(text)
@@ -74,6 +73,7 @@ describe('GET /todos', () => {
 })
 
 describe('GET /todos/:id', () => {
+
   it('should return todo doc', (done) => {
     request(app)
       .get(`/todos/${todos[0]._id.toHexString()}`)
@@ -95,6 +95,45 @@ describe('GET /todos/:id', () => {
   it('should return 404 for non-object ids', (done) => {
     request(app)
       .get('/todos/123')
+      .expect(404)
+      .end(done)
+  })
+
+})
+
+describe('DELETE /todos/:id', () => {
+
+  it('should remove a todo', (done) => {
+    const id = todos[1]._id.toHexString()
+    request(app)
+      .delete(`/todos/${id}`)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.todo._id).toBe(id)
+      })
+      .end((err, res) => {
+        if (err) {
+          return done(err)
+        }
+        Todo.findById(id).then((todo) => {
+          expect(todo).toBeFalsy()
+          done()
+        }).catch((err) => done(err))
+      })
+  })
+
+  it('should return 404 if todo not found', (done) => {
+    const id = new ObjectID().toHexString()
+    request(app)
+      .delete(`/todos/${id}`)
+      .expect(404)
+      .end(done)
+  })
+
+  it('should return 404 for non-object ids', (done) => {
+    request(app)
+    request(app)
+      .delete(`/todos/123`)
       .expect(404)
       .end(done)
   })
