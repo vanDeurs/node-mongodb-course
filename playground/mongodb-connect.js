@@ -8,7 +8,7 @@ MongoClient.connect('mongodb://localhost:27017/TodoApp', { useNewUrlParser: true
     console.log('Connected successfully do database.')
     const db = client.db('TodoApp')
 
-    db.collection('Todos').insertOne({
+    db.collection('todos').insertOne({
         text: 'A task to do',
         completed: false,
         completedAt: null
@@ -19,16 +19,16 @@ MongoClient.connect('mongodb://localhost:27017/TodoApp', { useNewUrlParser: true
         console.log(JSON.stringify(results.ops, undefined, 2))
     })
 
-    // db.collection('Users').insertOne({
-    //     name: 'Lisa',
-    //     age: 12,
-    //     location: 'Göteborg'
-    // }, (err, results) => {
-    //     if (err) {
-    //         return console.log('Unable to insert user', err)
-    //     }
-    //     console.log(results.ops)
-    // })
+    db.collection('users').insertOne({
+        name: 'Lisa',
+        age: 12,
+        location: 'Göteborg'
+    }, (err, results) => {
+        if (err) {
+            return console.log('Unable to insert user', err)
+        }
+        console.log(results.ops)
+    })
     
     client.close()
 })
