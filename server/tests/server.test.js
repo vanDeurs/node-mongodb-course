@@ -203,30 +203,30 @@ describe('GET /users/me', () => {
 
 describe('POST /users', () => {
   it('should create a user', (done) => {
-    const email = 'example@example.com';
-    const password = '123mnb!';
+    const email = 'example@example.com'
+    const password = '123mnb!'
 
     request(app)
       .post('/users')
       .send({email, password})
       .expect(200)
       .expect((res) => {
-        expect(res.headers['x-auth']).toBeDefined();
-        expect(res.body._id).toBeDefined();
-        expect(res.body.email).toBe(email);
+        expect(res.headers['x-auth']).toBeDefined()
+        expect(res.body._id).toBeDefined()
+        expect(res.body.email).toBe(email)
       })
       .end((err) => {
         if (err) {
-          return done(err);
+          return done(err)
         }
 
         User.findOne({email}).then((user) => {
-          expect(user).toBeDefined();
-          expect(user.password).toNotEqual(password);
-        });
-        done();
-      });
-  });
+          expect(user).toBeDefined()
+          expect(user.password).toEqual(expect.not.stringMatching(password))
+          done()
+        }).catch((err) => done(err)) 
+      })
+  })
 
   it('should return validation errors if request invalid', (done) => {
     request(app)
@@ -236,8 +236,8 @@ describe('POST /users', () => {
         password: '123'
       })
       .expect(400)
-      .end(done);
-  });
+      .end(done)
+  })
 
   it('should not create user if email in use', (done) => {
     request(app)
@@ -247,9 +247,60 @@ describe('POST /users', () => {
         password: 'Password123!'
       })
       .expect(400)
-      .end(done);
-  });
-});
+      .end(done)
+  })
+
+})
+
+describe('POST /users/login', () => {
+  it('should login user and return auth token', (done) => {
+    request(app)
+      .post('/users/login')
+      .send({
+        email: users[1].email,
+        password: users[1].password
+      })
+      .expect(200)
+      .expect((res) => {
+        expect(res.header['x-auth']).toBeTruthy()
+      })
+      .end((err, res) => {
+        if (err) {
+          return done(err)
+        }
+        User.findById(users[1]._id).then((user) => {
+          expect(user.tokens[0]).toMatchObject({
+            access: 'auth',
+            token: res.headers['x-auth']
+          })
+          done()
+        }).catch((err) => done(err)) 
+      })
+  })
+
+  it('should reject invalid login', (done) => {
+    request(app)
+      .post('/users/login')
+      .send({
+        email: users[1].email,
+        password: users[1].password + '1'
+      })
+      .expect(400)
+      .expect((res) => {
+        expect(res.header['x-auth']).toBeFalsy()
+      })
+      .end((err, res) => {
+        if (err) {
+          return done(err)
+        }
+        User.findById(users[1]._id).then((user) => {
+          expect(user.tokens.length).toBe(0)
+          done()
+        }).catch((err) => done(err)) 
+      })
+  })
+
+})
 
 
 
