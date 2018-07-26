@@ -262,8 +262,8 @@ describe('POST /users', () => {
       .send({email, password})
       .expect(200)
       .expect((res) => {
-        expect(res.headers['x-auth']).toBeDefined()
-        expect(res.body._id).toBeDefined()
+        expect(res.headers['x-auth']).toBeTruthy()
+        expect(res.body._id).toBeTruthy()
         expect(res.body.email).toBe(email)
       })
       .end((err) => {
@@ -273,7 +273,7 @@ describe('POST /users', () => {
 
         User.findOne({email}).then((user) => {
           expect(user).toBeDefined()
-          expect(user.password).toEqual(expect.not.stringMatching(password))
+          expect(user.password).not.toBe(password)
           done()
         }).catch((err) => done(err)) 
       })
